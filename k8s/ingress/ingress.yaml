@@ -19,7 +19,7 @@ metadata:
     # ValidationError: Certificate ARN 'arn:aws:acm:us-east-1:...' is not valid
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/ssl-redirect: "443"
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-2:506995420953:certificate/d4c8bfeb-5bd9-4ea5-a016-266283633142
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:061155112891:certificate/9575a96a-4d8d-46aa-8231-440adccc3f55
 
     # Health checks
     alb.ingress.kubernetes.io/healthcheck-path: /api/v1/actuator/health
@@ -35,7 +35,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: api.mayurcbz.space
+    - host: api.deploybykapish.space.space
       http:
         paths:
           - path: /api/v1/auth
