@@ -4,12 +4,12 @@
 // Set on the Jenkins controller (Global properties or job env): DOMAIN_NAME, S3_BUCKET_NAME, AWS_REGION, CLOUDFRONT_DISTRIBUTION_ID (optional)
 
 pipeline {
-    agent any
+    agent { label 'kapish' }
 
     environment {
         AWS_REGION     = "${env.AWS_REGION ?: 'us-east-1'}"
-        S3_BUCKET_NAME = "${env.S3_BUCKET_NAME ?: 'med-erp-frontend-prod'}"
-        DOMAIN_NAME    = "${env.DOMAIN_NAME ?: 'example.com'}"
+        S3_BUCKET_NAME = "${env.S3_BUCKET_NAME ?: 'med-erp-deploybykapish.space'}"
+        DOMAIN_NAME    = "${env.DOMAIN_NAME ?: 'api.deploybykapish.space'}"
     }
 
     options {
@@ -29,10 +29,11 @@ pipeline {
                         set -e
                         npm ci
                         npm run lint
-                        export VITE_USER_SERVICE_URL="https://api.med-erp.${DOMAIN_NAME}/api/v1"
-                        export VITE_PRODUCT_SERVICE_URL="https://api.med-erp.${DOMAIN_NAME}/api/v1"
-                        export VITE_ORDER_SERVICE_URL="https://api.med-erp.${DOMAIN_NAME}/api/v1"
+                        export VITE_USER_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
+                        export VITE_PRODUCT_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
+                        export VITE_ORDER_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
                         npm run build
+                        echo "Building frontend for: https://${DOMAIN_NAME}/api/v1"
                     '''
                 }
             }
@@ -43,7 +44,7 @@ pipeline {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-credentials',
+                    credentialsId: 'AWS-credentials',
                     accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                 ]]) {
@@ -52,15 +53,11 @@ pipeline {
                             set -e
                             aws s3 sync dist/ "s3://${S3_BUCKET_NAME}/" --region "$AWS_REGION" --delete \
                               --cache-control "public,max-age=31536000,immutable" --exclude "*.html"
-                            aws s3 cp dist/index.html "s3://${S3_BUCKET_NAME}/index.html" \
+                            aws s3 cp dist/ "s3://${S3_BUCKET_NAME}/" \
                               --region "$AWS_REGION" \
                               --cache-control "no-cache,no-store,must-revalidate" \
                               --content-type "text/html"
-                            if [ -n "${CLOUDFRONT_DISTRIBUTION_ID:-}" ]; then
-                              aws cloudfront create-invalidation \
-                                --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
-                                --paths "/*" >/dev/null
-                            fi
+                            
                         '''
                     }
                 }
