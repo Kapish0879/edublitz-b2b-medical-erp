@@ -16,6 +16,7 @@ pipeline {
         timeout(time: 20, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
+    stages {
     stage('Test') {
     steps {
         dir('frontend') {
@@ -76,7 +77,7 @@ stage('SonarQube Analysis') {
 // }
 
 
-    // stages {
+    
     //     stage('Checkout') {
     //         steps { checkout scm }
     //     }
@@ -122,7 +123,8 @@ stage('SonarQube Analysis') {
     //             }
     //         }
     //     }
-    // }
+    }
+
 
     post {
         always { cleanWs() }
