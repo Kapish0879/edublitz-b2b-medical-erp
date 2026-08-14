@@ -69,44 +69,19 @@ stage('Quality Gate') {
     }
 }
 
-// stage('Build Frontend') {
-//     steps {
-//         dir('frontend') {
-//             sh '''
-//                 set -e
-
-//                 export VITE_USER_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
-//                 export VITE_PRODUCT_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
-//                 export VITE_ORDER_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
-
-//                 npm run build
-//             '''
-//         }
-//     }
-// }
-
-
-    
-    //     stage('Checkout') {
-    //         steps { checkout scm }
-    //     }
-
-    //     stage('Build') {
-    //         steps {
-    //             dir('frontend') {
-    //                 sh '''
-    //                     set -e
-    //                     npm ci
-    //                     npm run lint
-    //                     export VITE_USER_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
-    //                     export VITE_PRODUCT_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
-    //                     export VITE_ORDER_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
-    //                     npm run build
-    //                     echo "Building frontend for: https://${DOMAIN_NAME}/api/v1"
-    //                 '''
-    //             }
-    //         }
-    //     }
+        stage('Build') {
+            steps {
+                dir('frontend') {
+                    sh '''
+                        export VITE_USER_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
+                        export VITE_PRODUCT_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
+                        export VITE_ORDER_SERVICE_URL="https://${DOMAIN_NAME}/api/v1"
+                        npm run build
+                        echo "Building frontend for: https://${DOMAIN_NAME}/api/v1"
+                    '''
+                }
+            }
+        }
 
     //     stage('S3 & CloudFront') {
     //         when { branch 'main' }
