@@ -5,6 +5,9 @@
 
 pipeline {
     agent { label 'kapish' }
+     tools {
+        nodejs 'Node20'
+    }
 
     environment {
         AWS_REGION     = "${env.AWS_REGION ?: 'us-east-1'}"
