@@ -84,7 +84,6 @@ stage('Quality Gate') {
         }
 
         stage('S3 & CloudFront') {
-            when { branch 'main' }
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
