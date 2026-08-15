@@ -106,7 +106,13 @@ stage('Quality Gate') {
 
 
     post {
-        always { cleanWs() }
+        always {
+            cleanWs(
+                deleteDirs: true,
+                disableDeferredWipeout: true,
+                notFailBuild: true
+            )
+        }
     }
 }
 
