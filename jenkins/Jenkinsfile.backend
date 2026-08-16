@@ -84,9 +84,20 @@ pipeline {
 
             post {
                 always {
+                    sh '''
+                      echo "========================================"
+                      echo "JUnit REPORTS"
+                      echo "========================================"
+
+                      find "$WORKSPACE" \
+                      -path "*/target/surefire-reports/*.xml" \
+                      -type f \
+                      -print
+                      
+                      '''
                     junit(
                         testResults: '**/target/surefire-reports/*.xml',
-                        allowEmptyResults: true,
+                        allowEmptyResults: true
                     )
                 }
             }
