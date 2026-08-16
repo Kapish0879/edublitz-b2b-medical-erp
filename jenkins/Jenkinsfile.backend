@@ -103,38 +103,38 @@ pipeline {
             }
         }
 
-        // stage('SonarQube Analysis') {
-        //     steps {
+        stage('SonarQube Analysis') {
+            steps {
 
-        //         withCredentials([
-        //             string(
-        //                 credentialsId: 'sonar-token',
-        //                 variable: 'SONAR_TOKEN'
-        //             )
-        //         ]) {
+                withCredentials([
+                    string(
+                        credentialsId: 'sonar-token',
+                        variable: 'SONAR_TOKEN'
+                    )
+                ]) {
 
-        //             sh '''
-        //                 set -e
+                    sh '''
+                        set -e
 
-        //                 for svc in user-service product-service order-service; do
+                        for svc in user-service product-service order-service; do
 
-        //                     echo "====================================="
-        //                     echo "SonarQube: $svc"
-        //                     echo "====================================="
+                            echo "====================================="
+                            echo "SonarQube: $svc"
+                            echo "====================================="
 
-        //                     cd "$WORKSPACE/$svc"
+                            cd "$WORKSPACE/$svc"
 
-        //                     mvn -B sonar:sonar \
-        //                       -Dsonar.projectKey="med-erp-$svc" \
-        //                       -Dsonar.projectName="med-erp-$svc" \
-        //                       -Dsonar.host.url="$SONAR_HOST_URL" \
-        //                       -Dsonar.token="$SONAR_TOKEN"
+                            mvn -B sonar:sonar \
+                              -Dsonar.projectKey="med-erp-$svc" \
+                              -Dsonar.projectName="med-erp-$svc" \
+                              -Dsonar.host.url="$SONAR_HOST_URL" \
+                              -Dsonar.token="$SONAR_TOKEN"
 
-        //                 done
-        //             '''
-        //         }
-        //     }
-        // }
+                        done
+                    '''
+                }
+            }
+        }
 
         // stage('Quality Gate') {
         //     steps {
@@ -513,4 +513,3 @@ Check the failed stage above.
 //         always { cleanWs() }
 //     }
 // }
-
