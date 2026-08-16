@@ -63,34 +63,34 @@ pipeline {
             }
         }
 
-        // stage('Build & Unit Test') {
-        //     steps {
-        //         sh '''
-        //             set -e
+        stage('Build & Unit Test') {
+            steps {
+                sh '''
+                    set -e
 
-        //             for svc in user-service product-service order-service; do
+                    for svc in user-service product-service order-service; do
 
-        //                 echo "====================================="
-        //                 echo "Building $svc"
-        //                 echo "====================================="
+                        echo "====================================="
+                        echo "Building $svc"
+                        echo "====================================="
 
-        //                 cd "$WORKSPACE/$svc"
+                        cd "$WORKSPACE/$svc"
 
-        //                 mvn -B clean verify
+                        mvn -B clean verify
 
-        //             done
-        //         '''
-        //     }
+                    done
+                '''
+            }
 
-        //     post {
-        //         always {
-        //             junit(
-        //                 allowEmptyResults: true,
-        //                 testResults: '**/target/surefire-reports/*.xml'
-        //             )
-        //         }
-        //     }
-        // }
+            post {
+                always {
+                    junit(
+                        allowEmptyResults: true,
+                        testResults: '**/target/surefire-reports/*.xml'
+                    )
+                }
+            }
+        }
 
         // stage('SonarQube Analysis') {
         //     steps {
