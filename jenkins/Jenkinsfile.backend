@@ -58,8 +58,7 @@ pipeline {
                     echo "Trivy:"
                     trivy --version
 
-                    echo "Sonar:"
-                    sonar-scanner --version
+                
                 '''
             }
         }
