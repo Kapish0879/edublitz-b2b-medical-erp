@@ -10,6 +10,7 @@ pipeline {
     agent { label 'kapish' }
     tools {
         maven 'maven'
+        jdk 'JDK17'
     }
 
     environment {
