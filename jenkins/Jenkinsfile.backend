@@ -93,11 +93,11 @@ pipeline {
                       -path "*/target/surefire-reports/*.xml" \
                       -type f \
                       -print
-                      
+
                       '''
                     junit(
                         testResults: '**/target/surefire-reports/*.xml',
-                        allowEmptyResults: true
+                        allowEmptyResults: false
                     )
                 }
             }
@@ -513,3 +513,4 @@ Check the failed stage above.
 //         always { cleanWs() }
 //     }
 // }
+
