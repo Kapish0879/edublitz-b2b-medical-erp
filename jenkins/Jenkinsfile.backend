@@ -124,7 +124,7 @@ pipeline {
 
                             cd "$WORKSPACE/$svc"
 
-                            mvn -B sonar:sonar \
+                            mvn -B sonar-scanner \
                               -Dsonar.projectKey="med-erp-$svc" \
                               -Dsonar.projectName="med-erp-$svc" \
                               -Dsonar.host.url="$SONAR_HOST_URL" \
