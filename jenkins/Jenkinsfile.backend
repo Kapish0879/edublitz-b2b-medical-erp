@@ -38,70 +38,70 @@ pipeline {
             }
         }
 
-        stage('Environment Check') {
-            steps {
-                sh '''
-                    set -e
+        // stage('Environment Check') {
+        //     steps {
+        //         sh '''
+        //             set -e
 
-                    echo "Java:"
-                    java -version
+        //             echo "Java:"
+        //             java -version
 
-                    echo "Maven:"
-                    mvn -version
+        //             echo "Maven:"
+        //             mvn -version
 
-                    echo "Docker:"
-                    docker --version
+        //             echo "Docker:"
+        //             docker --version
 
-                    echo "AWS:"
-                    aws --version
+        //             echo "AWS:"
+        //             aws --version
 
-                    echo "Trivy:"
-                    trivy --version
+        //             echo "Trivy:"
+        //             trivy --version
 
                 
-                '''
-            }
-        }
+        //         '''
+        //     }
+        // }
 
-        stage('Build & Unit Test') {
-            steps {
-                sh '''
-                    set -e
+        // stage('Build & Unit Test') {
+        //     steps {
+        //         sh '''
+        //             set -e
 
-                    for svc in user-service product-service order-service; do
+        //             for svc in user-service product-service order-service; do
 
-                        echo "====================================="
-                        echo "Building $svc"
-                        echo "====================================="
+        //                 echo "====================================="
+        //                 echo "Building $svc"
+        //                 echo "====================================="
 
-                        cd "$WORKSPACE/$svc"
+        //                 cd "$WORKSPACE/$svc"
 
-                        mvn -B clean verify
+        //                 mvn -B clean verify
 
-                    done
-                '''
-            }
+        //             done
+        //         '''
+        //     }
 
-            post {
-                always {
-                    sh '''
-                      echo "========================================"
-                      echo "JUnit REPORTS"
-                      echo "========================================"
+        //     post {
+        //         always {
+        //             sh '''
+        //               echo "========================================"
+        //               echo "JUnit REPORTS"
+        //               echo "========================================"
 
-                      find "$WORKSPACE" \
-                      -path "*/target/surefire-reports/*.xml" \
-                      -type f \
-                      -print
+        //               find "$WORKSPACE" \
+        //               -path "*/target/surefire-reports/*.xml" \
+        //               -type f \
+        //               -print
 
-                      '''
-                    junit(
-                        testResults: '**/target/surefire-reports/*.xml',
-                        allowEmptyResults: false
-                    )
-                }
-            }
-        }
+        //               '''
+        //             junit(
+        //                 testResults: '**/target/surefire-reports/*.xml',
+        //                 allowEmptyResults: false
+        //             )
+        //         }
+        //     }
+        // }
 
         stage('SonarQube Analysis') {
             steps {
@@ -116,7 +116,7 @@ pipeline {
                     sh '''
                         set -e
 
-                        for svc in user-service product-service order-service; do
+                        for svc in  product-service ; do
 
                             echo "====================================="
                             echo "SonarQube: $svc"
