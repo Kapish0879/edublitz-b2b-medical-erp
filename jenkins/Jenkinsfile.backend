@@ -104,37 +104,40 @@ pipeline {
         // }
 
         stage('SonarQube Analysis') {
-            steps {
+    steps {
 
-                withCredentials([
-                    string(
-                        credentialsId: 'sonar-token',
-                        variable: 'SONAR_TOKEN'
-                    )
-                ]) {
+        withSonarQubeEnv('SonarQube') {
 
-                    sh '''
-                        set -e
+            withCredentials([
+                string(
+                    credentialsId: 'sonar-token',
+                    variable: 'SONAR_TOKEN'
+                )
+            ]) {
 
-                        for svc in user-service product-service ; do
+                sh '''
+                    set -e
 
-                            echo "====================================="
-                            echo "SonarQube: $svc"
-                            echo "====================================="
+                    for svc in user-service product-service; do
 
-                            cd "$WORKSPACE/$svc"
+                        echo "====================================="
+                        echo "SonarQube: $svc"
+                        echo "====================================="
 
-                            mvn -B sonar-scanner \
-                              -Dsonar.projectKey="med-erp-$svc" \
-                              -Dsonar.projectName="med-erp-$svc" \
-                              -Dsonar.host.url="$SONAR_HOST_URL" \
-                              -Dsonar.token="$SONAR_TOKEN"
+                        cd "$WORKSPACE/$svc"
 
-                        done
-                    '''
-                }
+                        mvn -B sonar-scanner \
+                          -Dsonar.projectKey="med-erp-$svc" \
+                          -Dsonar.projectName="med-erp-$svc" \
+                          -Dsonar.host.url="$SONAR_HOST_URL" \
+                          -Dsonar.token="$SONAR_TOKEN"
+
+                    done
+                '''
             }
         }
+    }
+}
 
         // stage('Quality Gate') {
         //     steps {
