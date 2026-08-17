@@ -47,7 +47,7 @@ stage('SonarQube Analysis') {
                             ]) {
                                 sh """
                                     ${scannerHome}/bin/sonar-scanner \
-                                      -Dsonar.projectKey=med-erp \
+                                      -Dsonar.projectKey=med-erp-frontend \
                                       -Dsonar.sources=src \
                                       -Dsonar.typescript.tsconfigPath=tsconfig.json \
                                       -Dsonar.exclusions=node_modules/**,dist/**,coverage/** \
