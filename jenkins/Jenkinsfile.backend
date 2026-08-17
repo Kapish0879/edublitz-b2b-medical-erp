@@ -116,7 +116,7 @@ pipeline {
                     sh '''
                         set -e
 
-                        for svc in  product-service ; do
+                        for svc in user-service product-service ; do
 
                             echo "====================================="
                             echo "SonarQube: $svc"
