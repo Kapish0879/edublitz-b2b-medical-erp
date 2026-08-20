@@ -397,9 +397,12 @@ Check the failed stage above.
         }
 
         always {
-            cleanWs()
+             // Remove all files from Jenkins workspace
+                cleanWs()
+             sh '''
             # Remove all images
              docker rmi -f $(docker images -aq) 2>/dev/null || true
+             '''
         }
     }
 }
