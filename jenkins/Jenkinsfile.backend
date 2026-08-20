@@ -244,6 +244,7 @@ pipeline {
                         echo "====================================="
 
                         docker build -t ${ECR_REGISTRY}$svc:${BUILD_NUMBER} ./$svc
+                        docker images
 
                     done
                 '''
