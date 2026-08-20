@@ -183,28 +183,6 @@ pipeline {
         //     }
         // }
 
-        stage('Trivy Filesystem Scan') {
-            steps {
-
-                sh '''
-                    set -e
-
-                    for svc in user-service product-service order-service; do
-
-                        echo "====================================="
-                        echo "Trivy FS Scan: $svc"
-                        echo "====================================="
-
-                        trivy fs \
-                          --exit-code 0\
-                          --severity HIGH,CRITICAL \
-                          "$WORKSPACE/$svc"
-
-                    done
-                '''
-            }
-        }
-
         // stage('ECR Login') {
         //     when {
         //         branch 'main'
@@ -250,30 +228,28 @@ pipeline {
         //     }
         // }
 
-        // stage('Docker Build') {
-        //     when {
-        //         branch 'main'
-        //     }
+        stage('Docker Build') {
 
-        //     steps {
 
-        //         sh '''
-        //             set -e
+            steps {
 
-        //             for svc in user-service product-service order-service; do
+                sh '''
+                    set -e
 
-        //                 echo "====================================="
-        //                 echo "Docker Build: $svc"
-        //                 echo "====================================="
+                    for svc in user-service product-service order-service; do
 
-        //                 docker build \
-        //                   -t "$ECR_REGISTRY/med-erp/$svc:$IMAGE_TAG" \
-        //                   "$WORKSPACE/$svc"
+                        echo "====================================="
+                        echo "Docker Build: $svc"
+                        echo "====================================="
 
-        //             done
-        //         '''
-        //     }
-        // }
+                        docker build \
+                          -t "$ECR_REGISTRY/med-erp/$svc:$IMAGE_TAG" \
+                          "$WORKSPACE/$svc"
+
+                    done
+                '''
+            }
+        }
 
         // stage('Trivy Image Scan') {
         //     when {
