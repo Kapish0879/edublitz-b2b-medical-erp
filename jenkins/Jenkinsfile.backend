@@ -183,27 +183,27 @@ pipeline {
         //     }
         // }
 
-        // stage('Trivy Filesystem Scan') {
-        //     steps {
+        stage('Trivy Filesystem Scan') {
+            steps {
 
-        //         sh '''
-        //             set -e
+                sh '''
+                    set -e
 
-        //             for svc in user-service product-service order-service; do
+                    for svc in user-service product-service order-service; do
 
-        //                 echo "====================================="
-        //                 echo "Trivy FS Scan: $svc"
-        //                 echo "====================================="
+                        echo "====================================="
+                        echo "Trivy FS Scan: $svc"
+                        echo "====================================="
 
-        //                 trivy fs \
-        //                   --exit-code 1 \
-        //                   --severity HIGH,CRITICAL \
-        //                   "$WORKSPACE/$svc"
+                        trivy fs \
+                          --exit-code 1 \
+                          --severity HIGH,CRITICAL \
+                          "$WORKSPACE/$svc"
 
-        //             done
-        //         '''
-        //     }
-        // }
+                    done
+                '''
+            }
+        }
 
         // stage('ECR Login') {
         //     when {
