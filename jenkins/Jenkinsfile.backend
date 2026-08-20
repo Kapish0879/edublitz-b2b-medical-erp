@@ -401,7 +401,7 @@ Check the failed stage above.
                 cleanWs()
              sh '''
             # Remove all images
-            #docker rmi -f $(docker images -aq) 2>/dev/null || true
+            docker rmi -f $(docker images -aq) 2>/dev/null || true
              
              #display docker images
                 docker images
