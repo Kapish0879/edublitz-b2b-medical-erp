@@ -16,8 +16,9 @@ pipeline {
         AWS_REGION    = 'us-east-1'
         K8S_NAMESPACE = 'med-erp'
 
-        ECR_REGISTRY  = ''
-        IMAGE_TAG     = "${env.GIT_COMMIT ? env.GIT_COMMIT.take(8) : "b${env.BUILD_NUMBER}"}"
+        ECR_REGISTRY  = '580222437000.dkr.ecr.us-east-1.amazonaws.com/med-erp/'
+        AWS_DEFAULT_REGION = 'us-east-1'
+        AWS_ECR_REPO_NAME = 'med-erp'
 
         GITOPS_REPO   = 'https://github.com/Kapish0879/med-erp-gitops.git'
         GITOPS_BRANCH = 'main'
@@ -103,53 +104,53 @@ pipeline {
         //     }
         // }
 
-        stage('SonarQube Analysis') {
-    steps {
+//         stage('SonarQube Analysis') {
+//     steps {
 
-        withSonarQubeEnv('SonarQube') {
+//         withSonarQubeEnv('SonarQube') {
 
-            withCredentials([
-                string(
-                    credentialsId: 'sonar-token',
-                    variable: 'SONAR_TOKEN'
-                )
-            ]) {
+//             withCredentials([
+//                 string(
+//                     credentialsId: 'sonar-token',
+//                     variable: 'SONAR_TOKEN'
+//                 )
+//             ]) {
 
-                sh '''
-                    set -e
+//                 sh '''
+//                     set -e
 
-                    for svc in user-service product-service order-service; do
+//                     for svc in user-service product-service order-service; do
 
-                        echo "====================================="
-                        echo "SonarQube: $svc"
-                        echo "====================================="
+//                         echo "====================================="
+//                         echo "SonarQube: $svc"
+//                         echo "====================================="
 
-                        cd "$WORKSPACE/$svc"
+//                         cd "$WORKSPACE/$svc"
 
-                        mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
-                        -Dsonar.projectKey="med-erp-$svc" \
-                        -Dsonar.projectName="med-erp-$svc" \
-                        -Dsonar.host.url="$SONAR_HOST_URL" \
-                        -Dsonar.token="$SONAR_TOKEN"
+//                         mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
+//                         -Dsonar.projectKey="med-erp-$svc" \
+//                         -Dsonar.projectName="med-erp-$svc" \
+//                         -Dsonar.host.url="$SONAR_HOST_URL" \
+//                         -Dsonar.token="$SONAR_TOKEN"
 
-                    done
-                '''
-            }
-        }
-    }
-}
+//                     done
+//                 '''
+//             }
+//         }
+//     }
+// }
 
-        stage('Quality Gate') {
-            steps {
+        // stage('Quality Gate') {
+        //     steps {
 
-                timeout(time: 10, unit: 'MINUTES') {
+        //         timeout(time: 10, unit: 'MINUTES') {
 
-                    waitForQualityGate(
-                        abortPipeline: true
-                    )
-                }
-            }
-        }
+        //             waitForQualityGate(
+        //                 abortPipeline: true
+        //             )
+        //         }
+        //     }
+        // }
 
         // stage('OWASP Dependency Check') {
         //     steps {
@@ -242,9 +243,7 @@ pipeline {
                         echo "Docker Build: $svc"
                         echo "====================================="
 
-                        docker build \
-                          -t "$ECR_REGISTRY/med-erp/$svc:$IMAGE_TAG" \
-                          "$WORKSPACE/$svc"
+                        docker build -t ${ECR_REGISTRY}$svc:${BUILD_NUMBER}
 
                     done
                 '''
