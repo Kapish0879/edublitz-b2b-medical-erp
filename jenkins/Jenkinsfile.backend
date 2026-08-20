@@ -251,34 +251,34 @@ pipeline {
             }
         }
 
-        // stage('Trivy Image Scan') {
-        //     when {
-        //         branch 'main'
-        //     }
+        stage('Trivy Image Scan') {
+            when {
+                branch 'main'
+            }
 
-        //     steps {
+            steps {
 
-        //         sh '''
-        //             set -e
+                sh '''
+                    set -e
 
-        //             for svc in user-service product-service order-service; do
+                    for svc in user-service product-service order-service; do
 
-        //                 IMAGE="$ECR_REGISTRY/med-erp/$svc:$IMAGE_TAG"
+                        IMAGE="${ECR_REGISTRY}$svc:${BUILD_NUMBER}"
 
-        //                 echo "====================================="
-        //                 echo "Trivy Image Scan"
-        //                 echo "$IMAGE"
-        //                 echo "====================================="
+                        echo "====================================="
+                        echo "Trivy Image Scan"
+                        echo "$IMAGE"
+                        echo "====================================="
 
-        //                 trivy image \
-        //                   --exit-code 1 \
-        //                   --severity HIGH,CRITICAL \
-        //                   "$IMAGE"
+                        trivy image \
+                          --exit-code 1 \
+                          --severity HIGH,CRITICAL \
+                          "$IMAGE"
 
-        //             done
-        //         '''
-        //     }
-        // }
+                    done
+                '''
+            }
+        }
 
         // stage('Push Images to ECR') {
         //     when {
