@@ -251,41 +251,14 @@ pipeline {
             }
         }
 
-        stage('Trivy Image Scan') {
+       stage('trivy image scanning') {
+        steps {
+            sh '''
+                trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 1 ${ECR_REGISTRY}$svc:${BUILD_NUMBER}
 
-    steps {
-
-        sh '''
-            set -e
-
-            TRIVY_CACHE="/home/jenkins/trivy-cache"
-            TRIVY_TMP="/home/jenkins/trivy-tmp"
-
-            mkdir -p "$TRIVY_CACHE"
-            mkdir -p "$TRIVY_TMP"
-
-            export TMPDIR="$TRIVY_TMP"
-
-            for svc in user-service product-service order-service; do
-
-                IMAGE="${ECR_REGISTRY}$svc:${BUILD_NUMBER}"
-
-                echo "====================================="
-                echo "Trivy Image Scan"
-                echo "$IMAGE"
-                echo "====================================="
-
-                trivy image \
-                    --cache-dir "$TRIVY_CACHE" \
-                    --scanners vuln \
-                    --exit-code 1 \
-                    --severity HIGH,CRITICAL \
-                    "$IMAGE"
-
-            done
-        '''
-    }
-}
+            '''
+        }
+       }
 
         // stage('Trivy Image Scan') {
 
