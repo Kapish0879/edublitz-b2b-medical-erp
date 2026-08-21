@@ -254,8 +254,15 @@ pipeline {
        stage('trivy image scanning') {
         steps {
             sh '''
-                trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 0 ${ECR_REGISTRY}$svc:${BUILD_NUMBER}
-
+             for svc in user-service product-service order-service; do
+                echo "====================================="
+                trivy image \
+                --scanners vuln \
+                --severity HIGH,CRITICAL \
+                --exit-code 1 \
+                ${ECR_REGISTRY}$svc:${BUILD_NUMBER}
+                
+                done
             '''
         }
        }
