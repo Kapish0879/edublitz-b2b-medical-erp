@@ -253,29 +253,65 @@ pipeline {
 
         stage('Trivy Image Scan') {
 
-            steps {
+    steps {
 
-                sh '''
-                    set -e
+        sh '''
+            set -e
 
-                    for svc in user-service product-service order-service; do
+            TRIVY_CACHE="/home/jenkins/trivy-cache"
+            TRIVY_TMP="/home/jenkins/trivy-tmp"
 
-                        IMAGE="${ECR_REGISTRY}$svc:${BUILD_NUMBER}"
+            mkdir -p "$TRIVY_CACHE"
+            mkdir -p "$TRIVY_TMP"
 
-                        echo "====================================="
-                        echo "Trivy Image Scan"
-                        echo "$IMAGE"
-                        echo "====================================="
+            export TMPDIR="$TRIVY_TMP"
 
-                        trivy image \
-                          --exit-code 1 \
-                          --severity HIGH,CRITICAL \
-                          "$IMAGE"
+            for svc in user-service product-service order-service; do
 
-                    done
-                '''
-            }
-        }
+                IMAGE="${ECR_REGISTRY}$svc:${BUILD_NUMBER}"
+
+                echo "====================================="
+                echo "Trivy Image Scan"
+                echo "$IMAGE"
+                echo "====================================="
+
+                trivy image \
+                    --cache-dir "$TRIVY_CACHE" \
+                    --scanners vuln \
+                    --exit-code 1 \
+                    --severity HIGH,CRITICAL \
+                    "$IMAGE"
+
+            done
+        '''
+    }
+}
+
+        // stage('Trivy Image Scan') {
+
+        //     steps {
+
+        //         sh '''
+        //             set -e
+
+        //             for svc in user-service product-service order-service; do
+
+        //                 IMAGE="${ECR_REGISTRY}$svc:${BUILD_NUMBER}"
+
+        //                 echo "====================================="
+        //                 echo "Trivy Image Scan"
+        //                 echo "$IMAGE"
+        //                 echo "====================================="
+
+        //                 trivy image \
+        //                   --exit-code 1 \
+        //                   --severity HIGH,CRITICAL \
+        //                   "$IMAGE"
+
+        //             done
+        //         '''
+        //     }
+        // }
 
         // stage('Push Images to ECR') {
         //     when {
