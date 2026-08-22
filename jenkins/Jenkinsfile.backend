@@ -264,8 +264,29 @@ stage('Checkout GitOps Repository') {
         }
     }
 }
-        
+
+stage('Update Deployment Files') {
+    steps {
+        dir('gitops') {
+            sh '''
+                set -e
+
+                 for svc in user-service product-service order-service; do
+
+               
+                echo "${svc} Deployment File"
+                sed -i \
+                "s|image: .*${svc}-:.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}|" \
+                k8s/deployments/${svc}-deployment.yaml
+
+                done
+                grep -R "image:" k8s/deployments/
+            '''
+        }
     }
+}
+        
+}
 
     post {
 
