@@ -155,27 +155,27 @@ pipeline {
         
        
 
-        stage('Docker Build') {
+        // stage('Docker Build') {
 
 
-            steps {
+        //     steps {
 
-                sh '''
-                    set -e
+        //         sh '''
+        //             set -e
 
-                    for svc in user-service product-service order-service; do
+        //             for svc in user-service product-service order-service; do
 
-                        echo "====================================="
-                        echo "Docker Build: $svc"
-                        echo "====================================="
+        //                 echo "====================================="
+        //                 echo "Docker Build: $svc"
+        //                 echo "====================================="
 
-                        docker build -t ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER} ./$svc
-                        docker images
+        //                 docker build -t ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER} ./$svc
+        //                 docker images
 
-                    done
-                '''
-            }
-        }
+        //             done
+        //         '''
+        //     }
+        // }
 
     //    stage('trivy image scanning') {
 
@@ -201,98 +201,77 @@ pipeline {
 
         
 
-         stage('Push Images to ECR') {
-             steps {
-                withCredentials([
-              [$class: 'AmazonWebServicesCredentialsBinding',
-               credentialsId: 'AWS-credentials']])
-               {
-
-                 sh '''
-                     set -e
-
-                     echo "Logging in to Amazon ECR..."
-
-                     aws ecr get-login-password --region ${AWS_REGION} | \
-                     docker login --username AWS --password-stdin \
-                     ${ECR_REGISTRY}
-
-                     for svc in user-service product-service order-service; do
-
-                     IMAGE="${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}"
-                     echo "Pushing:"
-                     echo "$IMAGE"
-
-                     docker push "$IMAGE"
-
-                     done
-                     '''
-               }
-                }
-            }
-
-        // stage('Update GitOps Repository') {
-        //     when {
-        //         branch 'main'
-        //     }
-
-        //     steps {
-
+        //  stage('Push Images to ECR') {
+        //      steps {
         //         withCredentials([
-        //             usernamePassword(
-        //                 credentialsId: 'github-gitops',
-        //                 usernameVariable: 'GIT_USER',
-        //                 passwordVariable: 'GIT_TOKEN'
-        //             )
-        //         ]) {
+        //       [$class: 'AmazonWebServicesCredentialsBinding',
+        //        credentialsId: 'AWS-credentials']])
+        //        {
 
-        //             sh '''
-        //                 set -e
+        //          sh '''
+        //              set -e
 
-        //                 rm -rf "$WORKSPACE/gitops"
+        //              echo "Logging in to Amazon ECR..."
 
-        //                 git clone \
-        //                   --branch "$GITOPS_BRANCH" \
-        //                   "https://${GIT_USER}:${GIT_TOKEN}@github.com/Kapish0879/med-erp-gitops.git" \
-        //                   "$WORKSPACE/gitops"
+        //              aws ecr get-login-password --region ${AWS_REGION} | \
+        //              docker login --username AWS --password-stdin \
+        //              ${ECR_REGISTRY}
 
-        //                 cd "$WORKSPACE/gitops"
+        //              for svc in user-service product-service order-service; do
 
-        //                 echo "Updating Kubernetes images..."
+        //              IMAGE="${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}"
+        //              echo "Pushing:"
+        //              echo "$IMAGE"
 
-        //                 sed -i \
-        //                   "s|image: .*med-erp/user-service:.*|image: $ECR_REGISTRY/${AWS_ECR_REPO_NAME}/user-service:$IMAGE_TAG|" \
-        //                   user-service/deployment.yaml
+        //              docker push "$IMAGE"
 
-        //                 sed -i \
-        //                   "s|image: .*med-erp/product-service:.*|image: $ECR_REGISTRY/${AWS_ECR_REPO_NAME}/product-service:$IMAGE_TAG|" \
-        //                   product-service/deployment.yaml
-
-        //                 sed -i \
-        //                   "s|image: .*med-erp/order-service:.*|image: $ECR_REGISTRY/${AWS_ECR_REPO_NAME}/order-service:$IMAGE_TAG|" \
-        //                   order-service/deployment.yaml
-
-        //                 git config user.name "Jenkins"
-        //                 git config user.email "jenkins@localhost"
-
-        //                 git add .
-
-        //                 if git diff --cached --quiet; then
-
-        //                     echo "No GitOps changes."
-
-        //                 else
-
-        //                     git commit \
-        //                       -m "Update backend images to $IMAGE_TAG"
-
-        //                     git push origin "$GITOPS_BRANCH"
-
-        //                 fi
-        //             '''
+        //              done
+        //              '''
+        //        }
         //         }
         //     }
-        // }
+
+
+stage('Update Kubernetes Manifests') {
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'GITHUB-TOKEN',
+                usernameVariable: 'Kapish0879'
+            )
+        ]) 
+        {
+            sh '''
+              set -e
+
+                git clone ${GITOPS_REPO}
+
+                for svc in user-service product-service order-service; do
+
+                    sed -i "s|image: .*${svc}-.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}|" \
+                        med-erp-gitops/k8s/deployments/${svc}-deployment.yaml
+                done
+
+
+    
+
+                    cd med-erp-gitops/k8s/deployments
+
+                    cat user-service-deployment.yaml
+            '''
+            
+                // sed -i "s|image: .*user-service-.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:user-service-${BUILD_NUMBER}|" \
+                //     k8s-repo/k8s/deployments/user-service-deployment.yaml
+
+                // sed -i "s|image: .*product-service-.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:product-service-${BUILD_NUMBER}|" \
+                //     k8s-repo/k8s/deployments/product-service-deployment.yaml
+
+                // sed -i "s|image: .*order-service-.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:order-service-${BUILD_NUMBER}|" \
+                //     k8s-repo/k8s/deployments/order-service-deployment.yaml
+        }
+    }
+}
+        
     }
 
     post {
