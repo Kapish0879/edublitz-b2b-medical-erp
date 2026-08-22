@@ -276,7 +276,7 @@ stage('Update Deployment Files') {
                
                 echo "${svc} Deployment File"
                 sed -i \
-                "s|image: .*${svc}-:.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}|" \
+                "s|image: .*:${svc}-[0-9]*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}|" \
                 k8s/deployments/${svc}-deployment.yaml
 
                 done
