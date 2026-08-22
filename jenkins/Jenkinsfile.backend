@@ -258,12 +258,10 @@ pipeline {
             sh '''
                 set -e
 
-                export TEMPDIR=/opt/trivy-cache/tmp
-
              for svc in user-service product-service order-service; do
                 echo "====================================="
+                TEMPDIR = /opt/temp-trivy/ \
                 trivy image \
-                --cache-dir /opt/trivy-cache/cache \
                 --scanners vuln \
                 --severity HIGH,CRITICAL \
                 --exit-code 1 \
