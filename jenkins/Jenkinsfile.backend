@@ -152,82 +152,8 @@ pipeline {
         //     }
         // }
 
-        // stage('OWASP Dependency Check') {
-        //     steps {
-
-        //         sh '''
-        //             set -e
-
-        //             for svc in user-service product-service order-service; do
-
-        //                 echo "====================================="
-        //                 echo "Dependency Check: $svc"
-        //                 echo "====================================="
-
-        //                 cd "$WORKSPACE/$svc"
-
-        //                 mvn -B \
-        //                   org.owasp:dependency-check-maven:check \
-        //                   -DfailBuildOnCVSS=7
-
-        //             done
-        //         '''
-        //     }
-
-        //     post {
-        //         always {
-        //             archiveArtifacts(
-        //                 artifacts: '**/target/dependency-check-report.html',
-        //                 allowEmptyArchive: true
-        //             )
-        //         }
-        //     }
-        // }
-
-        // stage('ECR Login') {
-        //     when {
-        //         branch 'main'
-        //     }
-
-        //     steps {
-
-        //         withCredentials([
-        //             [$class: 'AmazonWebServicesCredentialsBinding',
-        //              credentialsId: 'aws-credentials',
-        //              accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-        //              secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']
-        //         ]) {
-
-        //             sh '''
-        //                 set -e
-
-        //                 ACCOUNT=$(aws sts get-caller-identity \
-        //                   --query Account \
-        //                   --output text)
-
-        //                 ECR_REGISTRY="${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-
-        //                 echo "ECR Registry:"
-        //                 echo "$ECR_REGISTRY"
-
-        //                 aws ecr get-login-password \
-        //                   --region "$AWS_REGION" | \
-        //                   docker login \
-        //                   --username AWS \
-        //                   --password-stdin "$ECR_REGISTRY"
-
-        //                 echo "$ECR_REGISTRY" > "$WORKSPACE/ecr_registry.txt"
-        //             '''
-
-        //             script {
-        //                 env.ECR_REGISTRY = sh(
-        //                     script: 'cat ecr_registry.txt',
-        //                     returnStdout: true
-        //                 ).trim()
-        //             }
-        //         }
-        //     }
-        // }
+        
+       
 
         stage('Docker Build') {
 
@@ -260,7 +186,9 @@ pipeline {
 
              for svc in user-service product-service order-service; do
                 echo "====================================="
-                TMPDIR=/opt/temp-trivy trivy image \
+                TMPDIR=/opt/temp-trivy \
+                trivy image \
+                --cache-dir /opt/trivy-cache \
                 --scanners vuln \
                 --severity HIGH,CRITICAL \
                 --exit-code 1 \
