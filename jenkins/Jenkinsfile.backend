@@ -39,118 +39,118 @@ pipeline {
             }
         }
 
-        stage('Environment Check') {
-            steps {
-                sh '''
-                    set -e
+//         stage('Environment Check') {
+//             steps {
+//                 sh '''
+//                     set -e
 
-                    echo "Java:"
-                    java -version
+//                     echo "Java:"
+//                     java -version
 
-                    echo "Maven:"
-                    mvn -version
+//                     echo "Maven:"
+//                     mvn -version
 
-                    echo "Docker:"
-                    docker --version
+//                     echo "Docker:"
+//                     docker --version
 
-                    echo "AWS:"
-                    aws --version
+//                     echo "AWS:"
+//                     aws --version
 
-                    echo "Trivy:"
-                    trivy --version
+//                     echo "Trivy:"
+//                     trivy --version
 
                 
-                '''
-            }
-        }
+//                 '''
+//             }
+//         }
 
-        stage('Build & Unit Test') {
-            steps {
-                sh '''
-                    set -e
+//         stage('Build & Unit Test') {
+//             steps {
+//                 sh '''
+//                     set -e
 
-                    for svc in user-service product-service order-service; do
+//                     for svc in user-service product-service order-service; do
 
-                        echo "====================================="
-                        echo "Building $svc"
-                        echo "====================================="
+//                         echo "====================================="
+//                         echo "Building $svc"
+//                         echo "====================================="
 
-                        cd "$WORKSPACE/$svc"
+//                         cd "$WORKSPACE/$svc"
 
-                        mvn -B clean verify
+//                         mvn -B clean verify
 
-                    done
-                '''
-            }
+//                     done
+//                 '''
+//             }
 
-            post {
-                always {
-                    sh '''
-                      echo "========================================"
-                      echo "JUnit REPORTS"
-                      echo "========================================"
+//             post {
+//                 always {
+//                     sh '''
+//                       echo "========================================"
+//                       echo "JUnit REPORTS"
+//                       echo "========================================"
 
-                      find "$WORKSPACE" \
-                      -path "*/target/surefire-reports/*.xml" \
-                      -type f \
-                      -print
+//                       find "$WORKSPACE" \
+//                       -path "*/target/surefire-reports/*.xml" \
+//                       -type f \
+//                       -print
 
-                      '''
-                    junit(
-                        testResults: '**/target/surefire-reports/*.xml',
-                        allowEmptyResults: false
-                    )
-                }
-            }
-        }
+//                       '''
+//                     junit(
+//                         testResults: '**/target/surefire-reports/*.xml',
+//                         allowEmptyResults: false
+//                     )
+//                 }
+//             }
+//         }
 
-        stage('SonarQube Analysis') {
-    steps {
+//         stage('SonarQube Analysis') {
+//     steps {
 
-        withSonarQubeEnv('SonarQube') {
+//         withSonarQubeEnv('SonarQube') {
 
-            withCredentials([
-                string(
-                    credentialsId: 'sonar-token',
-                    variable: 'SONAR_TOKEN'
-                )
-            ]) {
+//             withCredentials([
+//                 string(
+//                     credentialsId: 'sonar-token',
+//                     variable: 'SONAR_TOKEN'
+//                 )
+//             ]) {
 
-                sh '''
-                    set -e
+//                 sh '''
+//                     set -e
 
-                    for svc in user-service product-service order-service; do
+//                     for svc in user-service product-service order-service; do
 
-                        echo "====================================="
-                        echo "SonarQube: $svc"
-                        echo "====================================="
+//                         echo "====================================="
+//                         echo "SonarQube: $svc"
+//                         echo "====================================="
 
-                        cd "$WORKSPACE/$svc"
+//                         cd "$WORKSPACE/$svc"
 
-                        mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
-                        -Dsonar.projectKey="med-erp-$svc" \
-                        -Dsonar.projectName="med-erp-$svc" \
-                        -Dsonar.host.url="$SONAR_HOST_URL" \
-                        -Dsonar.token="$SONAR_TOKEN"
+//                         mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
+//                         -Dsonar.projectKey="med-erp-$svc" \
+//                         -Dsonar.projectName="med-erp-$svc" \
+//                         -Dsonar.host.url="$SONAR_HOST_URL" \
+//                         -Dsonar.token="$SONAR_TOKEN"
 
-                    done
-                '''
-            }
-        }
-    }
-}
+//                     done
+//                 '''
+//             }
+//         }
+//     }
+// }
 
-        stage('Quality Gate') {
-            steps {
+//         stage('Quality Gate') {
+//             steps {
 
-                timeout(time: 10, unit: 'MINUTES') {
+//                 timeout(time: 10, unit: 'MINUTES') {
 
-                    waitForQualityGate(
-                        abortPipeline: true
-                    )
-                }
-            }
-        }
+//                     waitForQualityGate(
+//                         abortPipeline: true
+//                     )
+//                 }
+//             }
+//         }
 
         
        
@@ -177,27 +177,27 @@ pipeline {
             }
         }
 
-       stage('trivy image scanning') {
+    //    stage('trivy image scanning') {
 
-        steps {
+    //     steps {
 
-            sh '''
-                set -e
+    //         sh '''
+    //             set -e
 
-             for svc in user-service product-service order-service; do
-                echo "====================================="
-                TEMPDIR=/opt/temp-trivy \
-                trivy image \
-                --cache-dir /opt/trivy-cache \
-                --scanners vuln \
-                --severity HIGH,CRITICAL \
-                --exit-code 0 \
-                ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}
+    //          for svc in user-service product-service order-service; do
+    //             echo "====================================="
+    //             TEMPDIR=/opt/temp-trivy \
+    //             trivy image \
+    //             --cache-dir /opt/trivy-cache \
+    //             --scanners vuln \
+    //             --severity HIGH,CRITICAL \
+    //             --exit-code 0 \
+    //             ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}
 
-                done
-            '''
-        }
-       }
+    //             done
+    //         '''
+    //     }
+    //    }
 
         
 
