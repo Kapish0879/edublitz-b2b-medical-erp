@@ -260,8 +260,7 @@ pipeline {
 
              for svc in user-service product-service order-service; do
                 echo "====================================="
-                TEMPDIR = /opt/temp-trivy/ \
-                trivy image \
+                TMPDIR=/opt/temp-trivy trivy image \
                 --scanners vuln \
                 --severity HIGH,CRITICAL \
                 --exit-code 1 \
