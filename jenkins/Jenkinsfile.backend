@@ -169,7 +169,7 @@ pipeline {
                         echo "Docker Build: $svc"
                         echo "====================================="
 
-                        docker build -t ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}/$svc:${BUILD_NUMBER} ./$svc
+                        docker build -t ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER} ./$svc
                         docker images
 
                     done
@@ -192,7 +192,7 @@ pipeline {
     //             --scanners vuln \
     //             --severity HIGH,CRITICAL \
     //             --exit-code 1 \
-    //             ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}/$svc:${BUILD_NUMBER}
+    //             ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}
 
     //             done
     //         '''
@@ -219,8 +219,7 @@ pipeline {
 
                      for svc in user-service product-service order-service; do
 
-                     IMAGE="${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}/$svc:${BUILD_NUMBER}"
-
+                     IMAGE="${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}"
                      echo "Pushing:"
                      echo "$IMAGE"
 
