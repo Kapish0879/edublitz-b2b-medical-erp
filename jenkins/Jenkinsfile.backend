@@ -259,7 +259,7 @@ pipeline {
                 set -e
              for svc in user-service product-service order-service; do
                 echo "====================================="
-                TEMPDIR=/opt/trivy-cache
+                TEMPDIR=/opt/trivy-trivy \
                 trivy image \
                 --scanners vuln \
                 --severity HIGH,CRITICAL \
