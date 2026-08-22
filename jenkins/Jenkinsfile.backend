@@ -285,6 +285,42 @@ stage('Update Deployment Files') {
         }
     }
 }
+
+stage('Commit and Push GitOps Changes') {
+    steps {
+        dir('gitops') {
+            withCredentials([
+                string(
+                    credentialsId: 'GITHUB-TOKEN',
+                    variable: 'GIT_TOKEN'
+                )
+            ]) {
+                sh '''
+                    set -e
+
+                    git config user.name "Jenkins"
+                    git config user.email "jenkins@localhost"
+
+                    git status
+
+                    git add k8s/deployments/
+
+                    git commit -m "Update application images to ${BUILD_NUMBER}" 
+
+                    echo "========================================"
+                    echo "Pushing to GitOps Repository"
+                    echo "========================================"
+
+                    git push \
+                        https://${GIT_TOKEN}@github.com/Kapish0879/med-erp-gitops.git \
+                        HEAD:dev
+
+                    echo "GitOps repository updated successfully."
+                '''
+            }
+        }
+    }
+}
         
 }
 
