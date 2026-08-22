@@ -232,42 +232,35 @@ pipeline {
         //     }
 
 
-stage('Update Kubernetes Manifests') {
+stage('Checkout GitOps Repository') {
     steps {
-        withCredentials([
-            usernamePassword(
-                credentialsId: 'GITHUB-TOKEN',
-                usernameVariable: 'Kapish0879'
-            )
-        ]) 
-        {
-            sh '''
-              set -e
+        dir('gitops') {
 
-                git clone ${GITOPS_REPO}
+            withCredentials([
+                string(
+                    credentialsId: 'GITHUB-TOKEN',
+                    variable: 'GIT_TOKEN'
+                )
+            ]) {
+                sh '''
+                    set -e
 
-                for svc in user-service product-service order-service; do
+                    echo "========================================"
+                    echo "Cloning GitOps Repository"
+                    echo "========================================"
 
-                    sed -i "s|image: .*${svc}-.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}|" \
-                        med-erp-gitops/k8s/deployments/${svc}-deployment.yaml
-                done
+                    git clone \
+                        https://${GIT_TOKEN}@github.com/Kapish0879/med-erp-gitops.git \
+                        .
 
+                    git checkout main
+                    git pull origin main
 
-    
+                    git branch --show-current
 
-                    cd med-erp-gitops/k8s/deployments
-
-                    cat user-service-deployment.yaml
-            '''
-            
-                // sed -i "s|image: .*user-service-.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:user-service-${BUILD_NUMBER}|" \
-                //     k8s-repo/k8s/deployments/user-service-deployment.yaml
-
-                // sed -i "s|image: .*product-service-.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:product-service-${BUILD_NUMBER}|" \
-                //     k8s-repo/k8s/deployments/product-service-deployment.yaml
-
-                // sed -i "s|image: .*order-service-.*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:order-service-${BUILD_NUMBER}|" \
-                //     k8s-repo/k8s/deployments/order-service-deployment.yaml
+                    git remote -v
+                '''
+            }
         }
     }
 }
