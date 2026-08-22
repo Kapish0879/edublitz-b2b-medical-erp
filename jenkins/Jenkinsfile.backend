@@ -203,6 +203,10 @@ pipeline {
 
          stage('Push Images to ECR') {
              steps {
+                withCredentials([
+              [$class: 'AmazonWebServicesCredentialsBinding',
+               credentialsId: 'AWS-credentials']])
+               {
 
                  sh '''
                      set -e
@@ -215,17 +219,18 @@ pipeline {
 
                      for svc in user-service product-service order-service; do
 
-                         IMAGE="${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}/$svc:${BUILD_NUMBER}"
+                     IMAGE="${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}/$svc:${BUILD_NUMBER}"
 
-                         echo "Pushing:"
-                         echo "$IMAGE"
+                     echo "Pushing:"
+                     echo "$IMAGE"
 
-                       docker push "$IMAGE"
+                     docker push "$IMAGE"
 
-                    done
-                '''
-             }
-         }
+                     done
+                     '''
+               }
+                }
+            }
 
         // stage('Update GitOps Repository') {
         //     when {
