@@ -185,7 +185,7 @@ pipeline {
             steps {
                 withCredentials([
               [$class: 'AmazonWebServicesCredentialsBinding',
-               credentialsId: 'AWS-credentials']])
+               credentialsId: 'AWS-KEY']])
                {
                     sh '''
                      set -e
