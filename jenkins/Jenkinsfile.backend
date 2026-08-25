@@ -227,7 +227,7 @@ pipeline {
                     echo "========================================"
 
                     git clone \
-                        https://${GIT_TOKEN}@github.com/Kapish0879/med-erp-gitops.git 
+                        https://${GIT_TOKEN}@github.com/Kapish0879/med-erp-gitops.git .
 
                     git checkout main
                     git pull origin main
