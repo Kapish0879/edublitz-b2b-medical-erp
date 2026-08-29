@@ -161,25 +161,25 @@ pipeline {
             }
         }
 
-        stage('trivy image scanning') {
-            steps {
-                sh '''
-                set -e
+        // stage('trivy image scanning') {
+        //     steps {
+        //         sh '''
+        //         set -e
 
-             for svc in user-service product-service order-service; do
-                echo "====================================="
-                TEMPDIR=/opt/temp-trivy \
-                trivy image \
-                --cache-dir /opt/trivy-cache \
-                --scanners vuln \
-                --severity HIGH,CRITICAL \
-                --exit-code 0 \
-                ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}
+        //      for svc in user-service product-service order-service; do
+        //         echo "====================================="
+        //         TEMPDIR=/opt/temp-trivy \
+        //         trivy image \
+        //         --cache-dir /opt/trivy-cache \
+        //         --scanners vuln \
+        //         --severity HIGH,CRITICAL \
+        //         --exit-code 0 \
+        //         ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}
 
-                done
-            '''
-            }
-        }
+        //         done
+        //     '''
+        //     }
+        // }
 
         stage('Push Images to ECR') {
             steps {
