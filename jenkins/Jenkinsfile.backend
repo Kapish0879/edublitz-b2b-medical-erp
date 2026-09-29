@@ -7,17 +7,16 @@
 
 pipeline {
     agent
-    { label 'kapish' }
+    { label 'Kapish' }
 
     tools {
-        maven 'maven'
+        maven 'mvn'
     }
 
     environment {
         AWS_REGION    = 'us-east-1'
-        ECR_REGISTRY  = '419819289041.dkr.ecr.us-east-1.amazonaws.com'
-        AWS_DEFAULT_REGION = 'us-east-1'
-        AWS_ECR_REPO_NAME = 'med-erp'
+        ECR_REGISTRY  = '096644268460.dkr.ecr.us-east-1.amazonaws.com'
+        AWS_ECR_REPO_NAME = 'medical-erp'
         GITOPS_REPO   = 'https://github.com/Kapish0879/med-erp-gitops.git'
         GITOPS_BRANCH = 'main'
     }
@@ -101,62 +100,56 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    withCredentials([
-                string(
-                    credentialsId: 'sonar-token',
-                    variable: 'SONAR_TOKEN'
-                )
-            ]) {
-                        sh '''
-                    set -e
-
-                    for svc in user-service product-service order-service; do
-
-                        echo "====================================="
-                        echo "SonarQube: $svc"
-                        echo "====================================="
-
-                        cd "$WORKSPACE/$svc"
-
-                        mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
-                        -Dsonar.projectKey="med-erp-$svc" \
-                        -Dsonar.projectName="med-erp-$svc" \
-                        -Dsonar.host.url="$SONAR_HOST_URL" \
-                        -Dsonar.token="$SONAR_TOKEN"
-
-                    done
-                '''
+            environment {
+                SONAR_TOKEN = credentials('Sonar-Token')
             }
+            steps {
+                withSonarQubeEnv('SonarQube'){
+                dir('backend') {
+                    sh '''
+                        set -e
+
+                        for svc in user-service product-service order-service; do
+
+                            echo "====================================="
+                            echo "SonarQube: $svc"
+                            echo "====================================="
+
+                            cd "$WORKSPACE/$svc"
+
+                            mvn sonar:sonar \
+                                -Dsonar.projectKey="med-erp-$svc" \
+                                -Dsonar.projectName="med-erp-$svc" \
+                                -Dsonar.host.url="$SONAR_HOST_URL" \
+                                -Dsonar.token="$SONAR_TOKEN"
+
+                        done
+                    '''
                 }
             }
         }
+    }  
 
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 10, unit: 'MINUTES') {
-        //             waitForQualityGate(
-        //                 abortPipeline: true
-        //             )
-        //         }
-        //     }
-        // }
+        stage('Quality Gate')
+        {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate(
+                        abortPipeline: true
+                    )
+                }
+            }
+        }
 
         stage('Docker Build') {
             steps {
                 sh '''
                     set -e
                     for svc in user-service product-service order-service; do
-
-                        echo "====================================="
                         echo "Docker Build: $svc"
-                        echo "====================================="
-
-                        docker build -t ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER} ./$svc
+                        docker build -t "$ECR_REGISTRY/$AWS_ECR_REPO_NAME:$svc-$BUILD_NUMBER" "./$svc"
                         docker images
-
-                    done
+                        done
                 '''
             }
         }
@@ -168,13 +161,12 @@ pipeline {
 
              for svc in user-service product-service order-service; do
                 echo "====================================="
-                TEMPDIR=/opt/temp-trivy \
                 trivy image \
                 --cache-dir /opt/trivy-cache \
                 --scanners vuln \
                 --severity HIGH,CRITICAL \
                 --exit-code 0 \
-                ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}
+                $ECR_REGISTRY/$AWS_ECR_REPO_NAME:$svc-$BUILD_NUMBER
 
                 done
             '''
@@ -185,41 +177,32 @@ pipeline {
             steps {
                 withCredentials([
               [$class: 'AmazonWebServicesCredentialsBinding',
-               credentialsId: 'AWS-KEY']])
+               credentialsId: 'AWS-cred']])
                {
                     sh '''
-                     set -e
+                        set -e
 
-                     echo "Logging in to Amazon ECR..."
+                        echo "Logging in to Amazon ECR..."
+                        aws ecr get-login-password --region "$AWS_REGION" |
+                            docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
-                     aws ecr get-login-password --region ${AWS_REGION} | \
-                     docker login --username AWS --password-stdin \
-                     ${ECR_REGISTRY}
-
-                     for svc in user-service product-service order-service; do
-
-                     IMAGE="${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}"
-                     echo "Pushing:"
-                     echo "$IMAGE"
-
-                     docker push "$IMAGE"
-
-                     done
-                     '''
+                        for svc in user-service product-service order-service; do
+                            IMAGE="$ECR_REGISTRY/$AWS_ECR_REPO_NAME:$svc-$BUILD_NUMBER"
+                            echo "Pushing: $IMAGE"
+                            docker push "$IMAGE"
+                        done
+                    '''
                }
             }
         }
 
         stage('Checkout GitOps Repository') {
+            environment {
+                GIT_TOKEN = credentials('Github-Token')
+            }
             steps {
                 dir('gitops') {
-                    withCredentials([
-                string(
-                    credentialsId: 'GITHUB-TOKEN',
-                    variable: 'GIT_TOKEN'
-                )
-            ]) {
-                        sh '''
+                    sh '''
                     set -e
 
                     echo "========================================"
@@ -227,7 +210,7 @@ pipeline {
                     echo "========================================"
 
                     git clone \
-                        https://${GIT_TOKEN}@github.com/Kapish0879/med-erp-gitops.git .
+                        https://$GIT_TOKEN@github.com/Kapish0879/med-erp-gitops.git .
 
                     git checkout main
                     git pull origin main
@@ -236,7 +219,6 @@ pipeline {
 
                     git remote -v
                 '''
-            }
                 }
             }
         }
@@ -249,10 +231,10 @@ pipeline {
 
                  for svc in user-service product-service order-service; do
 
-                echo "${svc} Deployment File"
+                echo "$svc Deployment File"
                 sed -i \
-                "s|image: .*:${svc}-[0-9]*|image: ${ECR_REGISTRY}/${AWS_ECR_REPO_NAME}:${svc}-${BUILD_NUMBER}|" \
-                k8s/deployments/${svc}-deployment.yaml
+                "s|image: .*:$svc-[0-9]*|image: $ECR_REGISTRY/$AWS_ECR_REPO_NAME:$svc-$BUILD_NUMBER|" \
+                k8s/deployments/$svc-deployment.yaml
 
                 done
                 grep -R "image:" k8s/deployments/
@@ -266,7 +248,7 @@ pipeline {
                 dir('gitops') {
                     withCredentials([
                 string(
-                    credentialsId: 'GITHUB-TOKEN',
+                    credentialsId: 'Github-Token',
                     variable: 'GIT_TOKEN'
                 )
             ]) {
@@ -280,15 +262,15 @@ pipeline {
 
                     git add k8s/deployments/
 
-                    git commit -m "Update application images to ${BUILD_NUMBER}"
+                    git commit -m "Update application images to $BUILD_NUMBER"
 
                     echo "========================================"
                     echo "Pushing to GitOps Repository"
                     echo "========================================"
 
                     git push \
-                        https://${GIT_TOKEN}@github.com/Kapish0879/med-erp-gitops.git \
-                        HEAD:${GITOPS_BRANCH}
+                        https://$GIT_TOKEN@github.com/Kapish0879/med-erp-gitops.git \
+                        HEAD:$GITOPS_BRANCH
 
                     echo "GitOps repository updated successfully."
                 '''
