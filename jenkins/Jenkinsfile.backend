@@ -117,7 +117,7 @@ pipeline {
 
                             cd "$WORKSPACE/$svc"
 
-                            mvn sonar:sonar \
+                            mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                                 -Dsonar.projectKey="med-erp-$svc" \
                                 -Dsonar.projectName="med-erp-$svc" \
                                 -Dsonar.host.url="$SONAR_HOST_URL" \
